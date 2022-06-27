@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/relicer/static/css/main.02da3d4b.css",
+    "main.js": "/relicer/static/js/main.7f92944a.js",
+    "service-worker.js": "/relicer/service-worker.js",
+    "index.html": "/relicer/index.html",
+    "main.02da3d4b.css.map": "/relicer/static/css/main.02da3d4b.css.map",
+    "main.7f92944a.js.map": "/relicer/static/js/main.7f92944a.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.02da3d4b.css",
+    "static/js/main.7f92944a.js"
+  ]
+}
