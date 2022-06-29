@@ -1,11 +1,18 @@
 import { FaQuestion } from "react-icons/fa";
 import styled from "styled-components";
+import Relic, {
+  RelicCategory,
+  RelicPlace,
+  RelicMainStats,
+  RelicSubStats,
+} from "../../data/Relic";
 import {
   AbidingPanacea,
   Adamantine,
   ApollosBow,
   AstralWitchcraft,
   Enchanter,
+  Hades,
   HammerThor,
   ImmensusPeak,
   Incandescence,
@@ -18,62 +25,16 @@ import {
   TyrannyZeus,
   WarMaschine,
   WindWalker,
-} from "../icons/RelicIcons";
-
-export enum RelicCategory {
-  WindWalker,
-  WarMaschine,
-  AbidingPanacea,
-  OceanWaves,
-  HammerThor,
-  TyrannyZeus,
-  SnowDowager,
-  AstralWitchcraft,
-  MasterGrove,
-  ImmensusPeak,
-  Enchanter,
-  LightAbove,
-  SwordAvatara,
-  Incandescence,
-  Adamantine,
-  Stoneveins,
-  ApollosBow,
-}
-
-export enum RelicPlace {
-  Circle,
-  Square,
-  Triangle,
-  Diamond,
-  Hexagon,
-  Spade,
-}
-
-export enum MainStat {
-  Circle,
-}
-
-export interface Stat {
-  value: string;
-  bonus: number;
-}
-
-export interface $Relic {
-  stars: number;
-  category: RelicCategory;
-  plus: number;
-  place: RelicPlace;
-  mainStat: MainStat;
-  subStats: Stat[];
-}
+} from "../../icons/RelicIcons";
 
 interface $RelicType {
-  relic: $Relic;
+  relic: Relic;
+  onClick?: () => void;
 }
 
-const Relic = ({ relic }: $RelicType) => {
+const RelicView = ({ relic, onClick }: $RelicType) => {
   const findIcon = () => {
-    switch (relic.category) {
+    switch (+RelicCategory[relic.category]) {
       case RelicCategory.AbidingPanacea:
         return <AbidingPanacea />;
       case RelicCategory.WindWalker:
@@ -108,13 +69,15 @@ const Relic = ({ relic }: $RelicType) => {
         return <Stoneveins />;
       case RelicCategory.ApollosBow:
         return <ApollosBow />;
+      case RelicCategory.Hades:
+        return <Hades />;
       default:
         <FaQuestion />;
     }
   };
 
   const findPlace = () => {
-    switch (relic.place) {
+    switch (+RelicPlace[relic.place]) {
       case RelicPlace.Circle:
         return <Circle>{findIcon()}</Circle>;
       case RelicPlace.Square:
@@ -132,20 +95,42 @@ const Relic = ({ relic }: $RelicType) => {
     }
   };
 
-  return <Wrapper stars={relic.stars}>{findPlace()}</Wrapper>;
+  return (
+    <Wrapper stars={relic.stars} onClick={onClick}>
+      {findPlace()}
+      <Stats>
+        <Main>
+          {RelicMainStats[relic.mainStat.type].stat}{" "}
+          {RelicMainStats[relic.mainStat.type].base[relic.stars - 3] +
+            RelicMainStats[relic.mainStat.type].gain[relic.stars - 3] *
+              relic.plus}
+          <Plus>+{relic.plus}</Plus>
+        </Main>
+        {relic.subStats.map((sub) => (
+          <Sub>
+            {sub.isAdded && <>•</>} {RelicSubStats[sub.type].stat}{" "}
+            {RelicSubStats[sub.type].base[relic.stars - 2] +
+              RelicSubStats[sub.type].gain[relic.stars - 2] *
+                (sub.bonus ? sub.bonus : 0)}{" "}
+            {sub.bonus && sub.bonus > 0 ? <Bonus>{sub.bonus}</Bonus> : <></>}
+          </Sub>
+        ))}
+      </Stats>
+    </Wrapper>
+  );
 };
 
-export default Relic;
+export default RelicView;
 
 const handleColorType = (stars: number) => {
   switch (stars) {
-    case 5:
+    case 6:
       return "#eb6476";
-    case 4:
+    case 5:
       return "#EAB25D";
-    case 3:
+    case 4:
       return "MediumOrchid";
-    case 2:
+    case 3:
       return "lightgreen";
     default:
       return "#fff";
@@ -154,10 +139,53 @@ const handleColorType = (stars: number) => {
 
 const Wrapper = styled.div<{ stars: number }>`
   height: 80px;
-  width: 80px;
+  width: 200px;
   border-bottom-right-radius: 10px;
   border-top-left-radius: 10px;
   background-color: ${({ stars }) => handleColorType(stars)};
+  position: relative;
+  cursor: pointer;
+`;
+
+const Stats = styled.div`
+  position: absolute;
+  right: 0px;
+  height: 80px;
+  width: 120px;
+  border-left: 1px solid black;
+  font-size: 10px;
+  color: black;
+`;
+
+const Sub = styled.div`
+  padding: 5px;
+  padding-top: 2px;
+  padding-bottom: 0px;
+  width: 100%;
+  font-size: 9px;
+  color: black;
+`;
+const Main = styled.div`
+  padding: 5px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  width: 100%;
+  font-weight: bold;
+  border-bottom: 1px solid black;
+`;
+
+const Bonus = styled.div`
+  float: right;
+  height: 10px;
+  width: 10px;
+  border-radius: 10px;
+  background-color: lightblue;
+  text-align: center;
+  line-height: 10px;
+`;
+
+const Plus = styled.span`
+  float: right;
 `;
 
 const Square = styled.div`
@@ -185,6 +213,7 @@ const Diamond = styled(Square)`
   transform: rotate(45deg);
   & svg {
     transform: rotate(-45deg);
+    z-index: 10;
   }
 `;
 const Hexagon = styled(Square)`
@@ -218,6 +247,7 @@ const Hexagon = styled(Square)`
   transform: scale(0.6);
   & svg {
     margin-left: 20px;
+    z-index: 10;
     transform: scale(1.6);
   }
 `;
@@ -234,7 +264,7 @@ const Spade = styled(Square)`
     text-align: center;
     line-height: 30px;
     position: absolute;
-    left: 0;
+    left: -2px;
   }
 `;
 const Triangle = styled(Square)`
@@ -249,6 +279,8 @@ const Triangle = styled(Square)`
 
   & svg {
     position: absolute;
-    left: 0px;
+    z-index: 10;
+    left: -20px;
+    top: 20px;
   }
 `;
